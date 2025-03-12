@@ -1,0 +1,15 @@
+version: "3.8" # define a versão do arquivo de configuração do docker-compose
+
+services: # seção onde os serviços que serão executados são definidos
+  postgres: # nome do serviço que será executado
+    container_name: nest-clean-pg # nome do container Docker para o serviço postgres
+    image: postgres # a imagem Docker a ser usada para esse serviço, neste caso, a imagem oficial do PostgreSQL
+    ports:
+      - 5432:5432 # mapeia a porta 5432 do container para a porta 5432 da máquina host. O PostgreSQL usa a porta 5432 por padrão
+    environment: # variáveis de ambiente que serão passadas para o container
+      POSTGRES_USER: postgres # define o usuário do banco de dados (padrão para o PostgreSQL)
+      POSTGRES_PASSWORD: docker # define a senha do usuário PostgreSQL
+      POSTGRES_DB: nest-clean # nome do banco de dados que será criado quando o container iniciar
+      PGDATA: /data/postgres # define o diretório onde os dados do PostgreSQL serão armazenados dentro do container
+    volumes:
+      - ./data/pg:/data/postgres # monta o diretório local ./data/pg na máquina host para /data/postgres dentro do container, garantindo persistência dos dados
