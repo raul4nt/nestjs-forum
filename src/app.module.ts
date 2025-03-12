@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config'
 import { PrismaService } from './prisma/prisma.service'
 import { CreateAccountController } from './controllers/create-account.controller'
 import { envSchema } from './env'
+import { AuthModule } from './auth/auth.module'
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { envSchema } from './env'
       isGlobal: true,
       // torna ele acessivel em todo lugar(todos os modulos, etc)
     }),
+    AuthModule,
   ],
   // forRoot é pra modulos que queremos passar alguma configuração, e o imports é pra importar um modulo
   controllers: [CreateAccountController],
