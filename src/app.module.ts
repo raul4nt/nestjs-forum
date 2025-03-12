@@ -1,13 +1,12 @@
 import { Module } from '@nestjs/common'
-import { AppController } from './app.controller'
-import { AppService } from './app.service'
 import { PrismaService } from './prisma/prisma.service'
+import { CreateAccountController } from './controllers/create-account.controller'
 
 @Module({
   imports: [],
-  controllers: [AppController],
+  controllers: [CreateAccountController],
   // são todos os controllers deste módulo
-  providers: [AppService, PrismaService],
+  providers: [PrismaService],
   // todas as dependencia(inversao de dependencia/injectables) que os controllers deste modulo
   // podem vir a ter
 })

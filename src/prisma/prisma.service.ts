@@ -1,6 +1,8 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
 
+// precisamos colocar o injectable pra dizer que esta classe(service) pode ser implementada em outro lugar
+// (ser injetada em um controller)
 @Injectable()
 // extende a classe do PrismaClient pra termos acesso ao construtor dela e os metodos(conexao com banco)
 // implementa esses OnModules que servem basicamente pra fazer açoes quando o modulo iniciar ou quando ele
