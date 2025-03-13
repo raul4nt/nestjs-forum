@@ -15,7 +15,7 @@ const createAccountBodySchema = z.object({
   name: z.string(),
   email: z.string().email(),
   password: z.string(),
-  // criand o schema do objeto usando zod(pra uma posterior validação de campos)
+  // criando o schema do objeto usando zod(pra uma posterior validação de campos)
 })
 
 type CreateAccountBodySchema = z.infer<typeof createAccountBodySchema>

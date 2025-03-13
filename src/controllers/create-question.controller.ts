@@ -1,12 +1,59 @@
-import { Controller, Post, UseGuards } from '@nestjs/common'
+import { Body, Controller, Post, UseGuards } from '@nestjs/common'
+import { CurrentUser } from 'src/auth/current-user-decorator'
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'
+import { UserPayload } from 'src/auth/jwt.strategy'
+import { ZodValidationPipe } from 'src/pipes/zod-validation-pipe'
+import { PrismaService } from 'src/prisma/prisma.service'
+import { z } from 'zod'
+
+const createQuestionBodySchema = z.object({
+  title: z.string(),
+  content: z.string(),
+})
+
+const bodyValidationPipe = new ZodValidationPipe(createQuestionBodySchema)
+// aqui é outro jeito de colocar o ZodValidationPipe direto no body(ao inves de usar UsePipes)
+
+type CreateQuestionBodySchema = z.infer<typeof createQuestionBodySchema>
 
 @Controller('/questions')
 @UseGuards(JwtAuthGuard)
 // esse UseGuards faz a gente usar um guard que é o que o nestjs usa pra proteger uma rota(neste caso estamos protegendo usando jwt)
 export class CreateQuestionController {
-  constructor() {}
+  constructor(private prisma: PrismaService) {}
 
   @Post()
-  async handle() {}
+  async handle(
+    @Body(bodyValidationPipe) body: CreateQuestionBodySchema,
+    // passamos o validaton pipe direto aqui no body(como eu havia falado antes) e tipamos ele
+    @CurrentUser() user: UserPayload,
+    // usamos o decorator que criamos no outro arquivo pra dizer qual é o usuario atual(o logado), e tipamos ele com o tipo que criamos,
+    // neste caso é UserPayload(pegamos o id do usuario la do payload)
+  ) {
+    const { title, content } = body
+    const userId = user.sub
+    // pega o sub do payload que é onde fica o id
+
+    const slug = this.convertToSlug(title)
+    // usamos a funçao que ta logo ali abaixo pra converter um titulo pra slug
+
+    await this.prisma.question.create({
+      data: {
+        authorId: userId,
+        title,
+        content,
+        slug,
+      },
+    })
+  }
+
+  // funçaozinha que converte um titulo pra slug
+  private convertToSlug(title: string): string {
+    return title
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+  }
 }

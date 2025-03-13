@@ -64,7 +64,6 @@ export class AuthenticateController {
 
     return {
       access_token: accessToken,
-      // por fim, o retornamos
     }
   }
 }
