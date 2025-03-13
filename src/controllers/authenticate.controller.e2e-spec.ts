@@ -28,6 +28,7 @@ describe('Authenticate (E2E)', () => {
         email: 'johndoe@example.com',
         password: await hash('123456', 8),
       },
+      // cria o usuario
     })
 
     const response = await request(app.getHttpServer()).post('/sessions').send({
@@ -35,9 +36,12 @@ describe('Authenticate (E2E)', () => {
       password: '123456',
     })
 
+    // autentica ele
+
     expect(response.statusCode).toBe(201)
     expect(response.body).toEqual({
       access_token: expect.any(String),
     })
+    // espera que tenha gerado um token pra gente(após o login)
   })
 })

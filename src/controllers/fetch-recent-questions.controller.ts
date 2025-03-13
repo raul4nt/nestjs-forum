@@ -31,8 +31,8 @@ export class FetchRecentQuestionsController {
   async handle(@Query('page', queryValidationPipe) page: PageQueryParamSchema) {
     // usamos o @Query que é pra justamente acessar os paraemtros que vem na url(neste caso o page) e validamos
     // a page passada pelo usuario usando o validationpipe
-    const perPage = 1
-    // definimos que é uma question por pagina
+    const perPage = 20
+    // definimos que é 20 questionS por pagina
 
     const questions = await this.prisma.question.findMany({
       take: perPage,

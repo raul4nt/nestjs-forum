@@ -18,6 +18,7 @@ export default defineConfig({
   plugins: [
     tsConfigPaths(),
     swc.vite({
+      // swc torna mais rapido o vitest(ele usa esmodule como default, mas o swc é mais rapido)
       module: { type: 'es6' },
     }),
   ],
