@@ -6,16 +6,16 @@ Content-Type: application/json
 
 {
     "name": "Raul Silveira",
-    "email": "raul@rocketseat.com.br",
+    "email": "raul4@rocketseat.com.br",
     "password": "123456"
 }
 
 ### @name authenticate
 
-POST {{baseUrl}}/sessions 
+POST {{baseUrl}}/sessions
 Content-Type: application/json
 
 {
-    "email": "raul@rocketseat.com.br",
+    "email": "raul4@rocketseat.com.br",
     "password": "123456"
 }
