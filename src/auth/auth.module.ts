@@ -13,7 +13,7 @@ import { JwtStrategy } from './jwt.strategy'
       inject: [ConfigService],
       // no inject colocamos os serviços que iremos injetar neste modulo
       global: true,
-      async useFactory(config: ConfigService<Env, true>) {
+      useFactory(config: ConfigService<Env, true>) {
         // funçao que recebe nosso configservice passando o env type pra dentor dele
         const privateKey = config.get('JWT_PRIVATE_KEY', { infer: true })
         // pegamos lá do .env a nossa private key

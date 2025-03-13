@@ -2,34 +2,34 @@
 @authToken = {{authenticate.response.body.access_token}}
 
 # @name create_account
-POST {{baseUrl}}/accounts 
+POST {{baseUrl}}/accounts
 Content-Type: application/json
 
 {
-    "name": "Raul Silveira",
-    "email": "raul4@rocketseat.com.br",
-    "password": "123456"
+  "name": "Diego Fernandes",
+  "email": "diego@rocketseat.com.br",
+  "password": "123456"
 }
 
-### @name authenticate
+###
 
+# @name authenticate
 POST {{baseUrl}}/sessions
 Content-Type: application/json
 
 {
-    "email": "raul4@rocketseat.com.br",
-    "password": "123456"
+  "email": "diego@rocketseat.com.br",
+  "password": "123456"
 }
 
-### @name create_question
+###
 
+# @name create_question
 POST {{baseUrl}}/questions
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
 {
-    "title": "Nova pergunta",
-    "content": "Conteúdo da pergunta"
+  "title": "Novaqqqqq pergunta",
+  "content": "Teste"
 }
-
-
