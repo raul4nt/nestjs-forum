@@ -3,8 +3,8 @@ import { CurrentUser } from '@/infra/auth/current-user-decorator'
 import { JwtAuthGuard } from '@/infra/auth/jwt-auth.guard'
 import { UserPayload } from '@/infra/auth/jwt.strategy'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
-import { PrismaService } from '@/infra/database/prisma/prisma.service'
 import { z } from 'zod'
+import { CreateQuestionUseCase } from '@/domain/forum/application/use-cases/create-question'
 
 const createQuestionBodySchema = z.object({
   title: z.string(),
@@ -20,7 +20,7 @@ type CreateQuestionBodySchema = z.infer<typeof createQuestionBodySchema>
 @UseGuards(JwtAuthGuard)
 // esse UseGuards faz a gente usar um guard que é o que o nestjs usa pra proteger uma rota(neste caso estamos protegendo usando jwt)
 export class CreateQuestionController {
-  constructor(private prisma: PrismaService) {}
+  constructor(private createQuestion: CreateQuestionUseCase) {}
 
   @Post()
   async handle(
@@ -34,26 +34,33 @@ export class CreateQuestionController {
     const userId = user.sub
     // pega o sub do payload que é onde fica o id
 
-    const slug = this.convertToSlug(title)
-    // usamos a funçao que ta logo ali abaixo pra converter um titulo pra slug
-
-    await this.prisma.question.create({
-      data: {
-        authorId: userId,
-        title,
-        content,
-        slug,
-      },
+    await this.createQuestion.execute({
+      title,
+      content,
+      authorId: userId,
+      attachmentsIds: [],
     })
+
+    // const slug = this.convertToSlug(title)
+    // // usamos a funçao que ta logo ali abaixo pra converter um titulo pra slug
+
+    // await this.prisma.question.create({
+    //   data: {
+    //     authorId: userId,
+    //     title,
+    //     content,
+    //     slug,
+    //   },
+    // })
   }
 
-  // funçaozinha que converte um titulo pra slug
-  private convertToSlug(title: string): string {
-    return title
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
-  }
+  // // funçaozinha que converte um titulo pra slug
+  // private convertToSlug(title: string): string {
+  //   return title
+  //     .toLowerCase()
+  //     .normalize('NFD')
+  //     .replace(/[\u0300-\u036f]/g, '')
+  //     .replace(/[^\w\s-]/g, '')
+  //     .replace(/\s+/g, '-')
+  // }
 }

@@ -1,8 +1,9 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common'
 import { JwtAuthGuard } from '@/infra/auth/jwt-auth.guard'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
-import { PrismaService } from '@/infra/database/prisma/prisma.service'
 import { z } from 'zod'
+import { FetchRecentQuestionsUseCase } from '@/domain/forum/application/use-cases/fetch-recent-questions'
+import { QuestionPresenter } from '../presenters/question-presenter'
 
 const pageQueryParamSchema = z
   .string()
@@ -25,26 +26,38 @@ type PageQueryParamSchema = z.infer<typeof pageQueryParamSchema>
 @Controller('/questions')
 @UseGuards(JwtAuthGuard)
 export class FetchRecentQuestionsController {
-  constructor(private prisma: PrismaService) {}
+  constructor(private fetchRecentQuestions: FetchRecentQuestionsUseCase) {}
 
   @Get()
   async handle(@Query('page', queryValidationPipe) page: PageQueryParamSchema) {
     // usamos o @Query que é pra justamente acessar os paraemtros que vem na url(neste caso o page) e validamos
     // a page passada pelo usuario usando o validationpipe
-    const perPage = 20
+    // const perPage = 20
     // definimos que é 20 questionS por pagina
 
-    const questions = await this.prisma.question.findMany({
-      take: perPage,
-      // pega um só por pagina(usando o findMany do prisma(database))
-      skip: (page - 1) * perPage,
-      // usamos o skip pra pular de tanto em tanto
-      orderBy: {
-        createdAt: 'desc',
-        // ordenamos em ordem decrescente de criaçao(os mais recentes)
-      },
+    const result = await this.fetchRecentQuestions.execute({
+      page,
     })
 
-    return { questions }
+    // const questions = await this.prisma.question.findMany({
+    //   take: perPage,
+    //   // pega um só por pagina(usando o findMany do prisma(database))
+    //   skip: (page - 1) * perPage,
+    //   // usamos o skip pra pular de tanto em tanto
+    //   orderBy: {
+    //     createdAt: 'desc',
+    //     // ordenamos em ordem decrescente de criaçao(os mais recentes)
+    //   },
+    // })
+
+    if (result.isLeft()) {
+      throw new Error()
+    }
+
+    const questions = result.value.questions
+
+    // usando o map pra converter(usando o presenter de question) a nossa lista de perguntas
+    // de modo que fique mais amigavel pro front
+    return { questions: questions.map(QuestionPresenter.toHTTP) }
   }
 }
