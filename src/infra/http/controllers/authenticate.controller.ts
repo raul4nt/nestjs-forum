@@ -1,16 +1,7 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  Post,
-  UnauthorizedException,
-  UsePipes,
-} from '@nestjs/common'
-import { JwtService } from '@nestjs/jwt'
-import { compare } from 'bcryptjs'
+import { Body, Controller, HttpCode, Post, UsePipes } from '@nestjs/common'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
-import { PrismaService } from '@/infra/database/prisma/prisma.service'
 import { z } from 'zod'
+import { AuthenticateStudentUseCase } from '@/domain/forum/application/use-cases/authenticate-student'
 
 const authenticateBodySchema = z.object({
   email: z.string().email(),
@@ -24,11 +15,7 @@ type AuthenticateBodySchema = z.infer<typeof authenticateBodySchema>
 
 @Controller('/sessions')
 export class AuthenticateController {
-  constructor(
-    private prisma: PrismaService,
-    private jwt: JwtService,
-    // colocamos o JwtService do nestjs aqui usando inversao de dependencia
-  ) {}
+  constructor(private authenticateStudent: AuthenticateStudentUseCase) {}
 
   @Post()
   @HttpCode(201)
@@ -37,30 +24,16 @@ export class AuthenticateController {
   async handle(@Body() body: AuthenticateBodySchema) {
     const { email, password } = body
 
-    const user = await this.prisma.user.findUnique({
-      where: {
-        email,
-      },
-      // procura se tem um usuario com este email
+    const result = await this.authenticateStudent.execute({
+      email,
+      password,
     })
 
-    if (!user) {
-      throw new UnauthorizedException('User credentials do not match.')
-      // se nao existir no banco, da erro
+    if (result.isLeft()) {
+      throw new Error()
     }
 
-    const isPasswordValid = await compare(password, user.password)
-    // compara a senha usando o metodo do bcrypt
-
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('User credentials do not match.')
-      // se a senha tiver errada da erro
-    }
-
-    const accessToken = this.jwt.sign({ sub: user.id })
-    // usa o jwt sign pra de fato assinar o token(uma vez que as  credencias do usuario estao certas)
-    // isso gera um token pra ele usar a aplicaçao
-    // colocamos no sub o id do usuario pra sabermos de quem pertence este token
+    const { accessToken } = result.value
 
     return {
       access_token: accessToken,
