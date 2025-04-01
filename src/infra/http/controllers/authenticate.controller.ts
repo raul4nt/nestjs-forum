@@ -1,7 +1,16 @@
-import { Body, Controller, HttpCode, Post, UsePipes } from '@nestjs/common'
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  HttpCode,
+  Post,
+  UnauthorizedException,
+  UsePipes,
+} from '@nestjs/common'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
 import { z } from 'zod'
 import { AuthenticateStudentUseCase } from '@/domain/forum/application/use-cases/authenticate-student'
+import { WrongCredentialsError } from '@/domain/forum/application/use-cases/errors/wrong-credentials-error'
 
 const authenticateBodySchema = z.object({
   email: z.string().email(),
@@ -30,7 +39,19 @@ export class AuthenticateController {
     })
 
     if (result.isLeft()) {
-      throw new Error()
+      // tratativa de erros no controller do Nest
+      const error = result.value
+
+      switch (error.constructor) {
+        case WrongCredentialsError:
+          // usamos o switch pra pegar o erro la no constructor
+          // se for erro de credenciais erradas(aquele q nos mesmo criamos),
+          throw new UnauthorizedException(error.message)
+        // o erro mais adequado(status code, erros do proprio NestJS mesmo) é o unauthorized
+        default:
+          throw new BadRequestException(error.message)
+        // se nao, vai cair nesse default q sao todos os outros erros q n tem caso especifico, ai simplesmente sera BadRequest
+      }
     }
 
     const { accessToken } = result.value
