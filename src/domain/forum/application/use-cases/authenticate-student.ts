@@ -1,9 +1,9 @@
 import { Either, left, right } from '@/core/either'
 import { Injectable } from '@nestjs/common'
-import { Student } from '../../enterprise/entities/student'
 import { StudentsRepository } from '../repositories/students-repository'
-import { HashGenerator } from '../cryptography/hash-generator'
-import { StudentAlreadyExistsError } from './errors/student-already-exists-error'
+import { HashComparer } from '../cryptography/hash-comparer'
+import { Encrypter } from '../cryptography/encrypter'
+import { WrongCredentialsError } from './errors/wrong-credentials-error'
 
 interface AuthenticateStudentUseCaseRequest {
   email: string
@@ -11,9 +11,9 @@ interface AuthenticateStudentUseCaseRequest {
 }
 
 type AuthenticateStudentUseCaseResponse = Either<
-  StudentAlreadyExistsError,
+  WrongCredentialsError,
   {
-    student: Student
+    accessToken: string
   }
 >
 
@@ -21,33 +21,35 @@ type AuthenticateStudentUseCaseResponse = Either<
 export class AuthenticateStudentUseCase {
   constructor(
     private studentsRepository: StudentsRepository,
-    private hashGenerator: HashGenerator,
+    private hashComparer: HashComparer,
+    private encrypter: Encrypter,
   ) {}
 
   async execute({
-    name,
     email,
     password,
   }: AuthenticateStudentUseCaseRequest): Promise<AuthenticateStudentUseCaseResponse> {
-    const studentWithSameEmail =
-      await this.studentsRepository.findByEmail(email)
+    const student = await this.studentsRepository.findByEmail(email)
 
-    if (studentWithSameEmail) {
-      return left(new StudentAlreadyExistsError(email))
+    if (!student) {
+      return left(new WrongCredentialsError())
     }
 
-    const hashedPassword = await this.hashGenerator.hash(password)
+    const isPasswordValid = await this.hashComparer.compare(
+      password,
+      student.password,
+    )
 
-    const student = Student.create({
-      name,
-      email,
-      password: hashedPassword,
+    if (!isPasswordValid) {
+      return left(new WrongCredentialsError())
+    }
+
+    const accessToken = await this.encrypter.encrypt({
+      sub: student.id.toString(),
     })
 
-    await this.studentsRepository.create(student)
-
     return right({
-      student,
+      accessToken,
     })
   }
 }
