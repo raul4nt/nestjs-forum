@@ -11,6 +11,7 @@ import { z } from 'zod'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
 import { RegisterStudentUseCase } from '@/domain/forum/application/use-cases/register-student'
 import { StudentAlreadyExistsError } from '@/domain/forum/application/use-cases/errors/student-already-exists-error'
+import { Public } from '@/infra/auth/public'
 
 const createAccountBodySchema = z.object({
   name: z.string(),
@@ -24,6 +25,8 @@ type CreateAccountBodySchema = z.infer<typeof createAccountBodySchema>
 // entao a gente criou o schema, e com base no schema, usamos o z.infer pra criar
 // um tipo baseado nesse schema
 
+@Public()
+// torna a rota pública(conforme configuramos no public.ts)
 @Controller('/accounts')
 export class CreateAccountController {
   constructor(private registerStudent: RegisterStudentUseCase) {}

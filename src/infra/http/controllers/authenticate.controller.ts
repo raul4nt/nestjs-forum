@@ -11,6 +11,7 @@ import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
 import { z } from 'zod'
 import { AuthenticateStudentUseCase } from '@/domain/forum/application/use-cases/authenticate-student'
 import { WrongCredentialsError } from '@/domain/forum/application/use-cases/errors/wrong-credentials-error'
+import { Public } from '@/infra/auth/public'
 
 const authenticateBodySchema = z.object({
   email: z.string().email(),
@@ -22,6 +23,8 @@ type AuthenticateBodySchema = z.infer<typeof authenticateBodySchema>
 // entao a gente criou o schema, e com base no schema, usamos o z.infer pra criar
 // um tipo baseado nesse schema
 
+@Public()
+// torna a rota pública(conforme configuramos no public.ts)
 @Controller('/sessions')
 export class AuthenticateController {
   constructor(private authenticateStudent: AuthenticateStudentUseCase) {}
