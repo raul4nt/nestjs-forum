@@ -1,25 +1,26 @@
 import { Module } from '@nestjs/common'
 import { PassportModule } from '@nestjs/passport'
 import { JwtModule } from '@nestjs/jwt'
-import { ConfigService } from '@nestjs/config'
-import { Env } from '@/infra/env'
 import { JwtStrategy } from './jwt.strategy'
 import { APP_GUARD } from '@nestjs/core'
 import { JwtAuthGuard } from './jwt-auth.guard'
+import { EnvService } from '../env/env.service'
+import { EnvModule } from '../env/env.module'
 
 @Module({
   imports: [
     PassportModule,
     JwtModule.registerAsync({
       // usamos o registerAsync pra criar configuraçoes na classe(service)
-      inject: [ConfigService],
+      imports: [EnvModule],
+      inject: [EnvService],
       // no inject colocamos os serviços que iremos injetar neste modulo
       global: true,
-      useFactory(config: ConfigService<Env, true>) {
+      useFactory(env: EnvService) {
         // funçao que recebe nosso configservice passando o env type pra dentor dele
-        const privateKey = config.get('JWT_PRIVATE_KEY', { infer: true })
+        const privateKey = env.get('JWT_PRIVATE_KEY')
         // pegamos lá do .env a nossa private key
-        const publicKey = config.get('JWT_PUBLIC_KEY', { infer: true })
+        const publicKey = env.get('JWT_PUBLIC_KEY')
         // pegamos lá do .env a nossa public key
 
         return {
@@ -35,6 +36,7 @@ import { JwtAuthGuard } from './jwt-auth.guard'
   ],
   providers: [
     JwtStrategy,
+    EnvService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
