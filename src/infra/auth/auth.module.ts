@@ -41,6 +41,8 @@ import { EnvModule } from '../env/env.module'
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
+    // temos q passar o provide APP_GUARD e dizer q é o JwtAuthGuard q ira implementa-lo
+    // ele fara uma verificaçao se a rota isPublic, e se for, torna acessivel para todos
   ],
 })
 export class AuthModule {}
